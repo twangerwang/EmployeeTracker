@@ -47,7 +47,7 @@ inquirer.prompt([
             addEmployee();
             break;
         case 'Update an Employee Role':
-            UpdateEmployeeRole();
+            updateEmployeeRole();
             break;
         case 'Exit':
             db.end();
@@ -198,3 +198,54 @@ function addEmployee() {
     })
     
 };
+
+function updateEmployeeRole() {
+    db.query('SELECT * FROM employee',(err,employee) => {
+        if (err) console.log(err);
+        employees=employees.map((employee)=> {
+            return {
+                name: employee.first_name+""+employee.last_name,
+                value: employee.role_id
+            };
+        });
+        db.query('SELECT * FROM role', (err, roles)=> {
+            if (err) console.log(err);
+            roles=roles.map((role)=> {
+                return {
+                    name: role.title,
+                    value: role.id,
+                };
+            });
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'chooseEmployee',
+                    message: 'Which employee whould you like to update?',
+                    choices: employees,
+                },
+                {
+                    type: 'list',
+                    name: 'chooseRole',
+                    message: 'Select the new role for the employee',
+                    choices: roles,
+                },
+            ]).then((data)=> {
+                db.query('UPDATE employee SET ? WHERE ?',
+                [{
+                    role_id:data.chooseRole,
+                },
+                {
+                    id:data.chooseEmployee,
+                },
+                ],
+                function (err) {
+                    if (err) throw err;
+                }
+                
+                );
+                console.log('Employee role updated');
+                viewAllEmployees();
+            })
+        })
+    })
+}
