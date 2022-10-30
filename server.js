@@ -88,10 +88,10 @@ function addDepartment() {
             name: 'dept',
             message: 'What is the name of the new department?'
         }
-    ]).then(data=> {
+    ]).then((data)=> {
         db.query('INSERT INTO department SET ?',
         {
-            dept:data.dept
+            name:data.dept
         },function (err) {
             if (err) throw err;
             let values = [[data.dept]]
@@ -103,6 +103,14 @@ function addDepartment() {
 }
 
 function addRole() {
+    db.query('SELECT * FROM department',(err,departments) => {
+        if (err) console.log(err);
+        departments=departments.map((department)=> {
+            return {
+                name: department.name,
+                value: department.id
+            };
+        });
     inquirer.prompt([
         {
             type: 'input',
@@ -117,7 +125,8 @@ function addRole() {
         {
             type: 'list',
             name: 'dept',
-            message: 'Which department does the new role fall under?'
+            message: 'Which department does the new role fall under?',
+            choices: departments
         }
     ]).then((data)=> {
         db.query('INSERT INTO role SET ?', 
@@ -132,28 +141,29 @@ function addRole() {
                 console.log('\n New role added! \n')
                 console.table(['New Role'], values)
                 startQuestion();
-        })
-    })
+        });
+    });
+})
 }
 
 function addEmployee() {
     db.query('SELECT * FROM role', (err, roles)=> {
         if (err) console.log(err);
-        roles.roles.map((role)=> {
+        roles = roles.map((role)=> {
             return {
                 name:role.title,
                 value:role.id
             };
         });
-        db.query('SELECT * FROM EMPLOYEE', (err, manager)=> {
-            if (err) console.log(err);
-            manager.manager.map((manager)=> {
-                return {
-                    name: manager.first_name+""+manager.last_name,
-                    value:manager.manager_id
-                };
-            })
+        db.query('SELECT * FROM EMPLOYEE', (err, managers)=> {
+             if (err) console.log(err);
+                managers = managers.map((manager)=> {
+               return {
+                  name: manager.first_name+""+manager.last_name,
+                  value:manager.manager_id
+            };
         })
+        
         inquirer.prompt ([
             {
                 type:'input',
@@ -175,11 +185,11 @@ function addEmployee() {
                 type:'list',
                 name:'managerID',
                 message:"Who will be the new employee's new manager?",
-                choices:manager
+                choices: managers
             }
         ]).then((data)=> {
             console.log(data.role);
-            db.query('INSERT INTO emplyee SET ?',
+            db.query('INSERT INTO employee SET ?',
             {
                 first_name:data.firstName,
                 last_name: data.lastName,
@@ -196,11 +206,11 @@ function addEmployee() {
             )
         })
     })
-    
+});
 };
 
 function updateEmployeeRole() {
-    db.query('SELECT * FROM employee',(err,employee) => {
+    db.query('SELECT * FROM employee',(err,employees) => {
         if (err) console.log(err);
         employees=employees.map((employee)=> {
             return {
