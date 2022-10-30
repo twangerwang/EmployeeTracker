@@ -214,7 +214,7 @@ function updateEmployeeRole() {
         if (err) console.log(err);
         employees=employees.map((employee)=> {
             return {
-                name: employee.first_name+""+employee.last_name,
+                name: employee.first_name+" "+employee.last_name,
                 value: employee.role_id
             };
         });
